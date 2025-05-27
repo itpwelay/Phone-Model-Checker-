@@ -1,0 +1,32 @@
+// Modified fetchDeviceInfo in HTML to call the conceptual backend
+async function fetchDeviceInfo() {
+    const imei = document.getElementById('imeiInput').value;
+    if (!imei) {
+        alert("Please enter an IMEI.");
+        return;
+    }
+
+    try {
+        // This assumes your Flask backend is running on http://127.0.0.1:5000
+        const response = await fetch(`/get-device-notes?imei=${encodeURIComponent(imei)}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        document.getElementById('imeiDisplay').textContent = data.imei || "N/A";
+        document.getElementById('deviceBrand').textContent = data.basic_device_info_from_tac_db_mock?.brand || "N/A";
+        document.getElementById('deviceModel').textContent = data.basic_device_info_from_tac_db_mock?.model_hint || "N/A";
+        // You could add display for data.user_label and data.user_notes here
+        document.getElementById('deviceInfo').style.display = 'block';
+        alert(data.important_notice);
+
+    } catch (error) {
+        console.error("Error fetching device info:", error);
+        document.getElementById('deviceInfo').style.display = 'block';
+        document.getElementById('imeiDisplay').textContent = imei;
+        document.getElementById('deviceBrand').textContent = "Error fetching";
+        document.getElementById('deviceModel').textContent = "Please check console for details.";
+        alert("Could not fetch conceptual device info. This is a demo and does not perform real tracking.");
+    }
+}
